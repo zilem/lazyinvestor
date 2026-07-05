@@ -9,12 +9,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { PricePoint } from "@/types";
+import type { Currency, PricePoint } from "@/types";
 import { formatCurrency } from "@/lib/utils";
 
 type ChartProps = {
   data: PricePoint[];
-  currency: string;
+  currency: Currency;
 };
 
 export function Chart({ data, currency }: ChartProps) {

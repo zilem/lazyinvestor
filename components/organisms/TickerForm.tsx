@@ -3,7 +3,12 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/atoms/Button";
 import { FormField } from "@/components/molecules/FormField";
-import type { TrackerRequest } from "@/types";
+import { SelectField } from "@/components/molecules/SelectField";
+import {
+  SUPPORTED_CURRENCIES,
+  type Currency,
+  type TrackerRequest,
+} from "@/types";
 
 type TickerFormProps = {
   onSubmit: (request: TrackerRequest) => void;
@@ -12,6 +17,10 @@ type TickerFormProps = {
 };
 
 const today = () => new Date().toISOString().slice(0, 10);
+const isCurrency = (v: string): v is Currency =>
+  (SUPPORTED_CURRENCIES as readonly string[]).includes(v);
+
+const currencyOptions = SUPPORTED_CURRENCIES.map((c) => ({ value: c, label: c }));
 
 export function TickerForm({
   onSubmit,
@@ -24,6 +33,9 @@ export function TickerForm({
   );
   const [amount, setAmount] = useState(
     initialValues?.amount?.toString() ?? "1000",
+  );
+  const [currency, setCurrency] = useState<Currency>(
+    initialValues?.currency ?? "USD",
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -55,6 +67,7 @@ export function TickerForm({
       ticker: trimmedTicker,
       startDate,
       amount: parsedAmount,
+      currency,
     });
   }
 
@@ -64,7 +77,7 @@ export function TickerForm({
       className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
       noValidate
     >
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <FormField
           id="ticker"
           label="Ticker"
@@ -85,13 +98,24 @@ export function TickerForm({
         />
         <FormField
           id="amount"
-          label="Amount (USD)"
+          label="Amount"
           type="number"
           inputMode="decimal"
           min="1"
           step="0.01"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
+          disabled={isLoading}
+        />
+        <SelectField
+          id="currency"
+          label="Currency"
+          options={currencyOptions}
+          value={currency}
+          onChange={(e) => {
+            const next = e.target.value;
+            if (isCurrency(next)) setCurrency(next);
+          }}
           disabled={isLoading}
         />
       </div>

@@ -1,5 +1,5 @@
 import YahooFinance from "yahoo-finance2";
-import type { PricePoint, TrackerResult, TrackerSummary } from "@/types";
+import type { Currency, PricePoint, TrackerResult, TrackerSummary } from "@/types";
 import { toISODate } from "@/lib/utils";
 
 type RawQuote = {
@@ -22,7 +22,7 @@ export function priceFor(quote: RawQuote): number | null {
 export function computeTracker(input: {
   ticker: string;
   amount: number;
-  currency: string;
+  currency: Currency;
   quotes: RawQuote[];
 }): TrackerResult {
   const usable = input.quotes
@@ -65,6 +65,7 @@ export async function fetchTracker(
   ticker: string,
   startDate: Date,
   amount: number,
+  currency: Currency,
 ): Promise<TrackerResult> {
   const normalized = normalizeTicker(ticker);
   const result = await client.chart(normalized, {
@@ -75,7 +76,7 @@ export async function fetchTracker(
   return computeTracker({
     ticker: normalized,
     amount,
-    currency: result.meta.currency,
+    currency,
     quotes: result.quotes,
   });
 }

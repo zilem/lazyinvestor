@@ -1,7 +1,11 @@
+export const SUPPORTED_CURRENCIES = ["USD", "EUR"] as const;
+export type Currency = (typeof SUPPORTED_CURRENCIES)[number];
+
 export type TrackerRequest = {
   ticker: string;
   startDate: string;
   amount: number;
+  currency: Currency;
 };
 
 export type PricePoint = {
@@ -11,7 +15,7 @@ export type PricePoint = {
 
 export type TrackerSummary = {
   ticker: string;
-  currency: string;
+  currency: Currency;
   startDate: string;
   endDate: string;
   shares: number;

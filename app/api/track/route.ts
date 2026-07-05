@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server";
 import { fetchTracker } from "@/lib/finance";
-import type { TrackerErrorResponse, TrackerRequest } from "@/types";
+import {
+  SUPPORTED_CURRENCIES,
+  type Currency,
+  type TrackerErrorResponse,
+  type TrackerRequest,
+} from "@/types";
+
+function isCurrency(value: unknown): value is Currency {
+  return (
+    typeof value === "string" &&
+    (SUPPORTED_CURRENCIES as readonly string[]).includes(value)
+  );
+}
 
 function isTrackerRequest(value: unknown): value is TrackerRequest {
   if (typeof value !== "object" || value === null) return false;
@@ -8,7 +20,8 @@ function isTrackerRequest(value: unknown): value is TrackerRequest {
   return (
     typeof v.ticker === "string" &&
     typeof v.startDate === "string" &&
-    typeof v.amount === "number"
+    typeof v.amount === "number" &&
+    isCurrency(v.currency)
   );
 }
 
@@ -25,7 +38,9 @@ export async function POST(request: Request) {
   }
 
   if (!isTrackerRequest(payload)) {
-    return badRequest("Missing or invalid ticker, startDate, or amount.");
+    return badRequest(
+      `Missing or invalid ticker, startDate, amount, or currency (must be one of: ${SUPPORTED_CURRENCIES.join(", ")}).`,
+    );
   }
 
   const startDate = new Date(payload.startDate);
@@ -43,7 +58,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await fetchTracker(payload.ticker, startDate, payload.amount);
+    const result = await fetchTracker(
+      payload.ticker,
+      startDate,
+      payload.amount,
+      payload.currency,
+    );
     return NextResponse.json(result);
   } catch (error) {
     const message =
